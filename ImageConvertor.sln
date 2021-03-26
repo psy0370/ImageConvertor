@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageFormatChanger", "ImageFormatChanger\ImageFormatChanger.csproj", "{90899917-F26B-4765-A1DE-E7DA7168ABEC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageConvertor", "ImageConvertor\ImageConvertor.csproj", "{90899917-F26B-4765-A1DE-E7DA7168ABEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
