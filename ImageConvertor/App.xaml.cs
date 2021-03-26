@@ -2,7 +2,7 @@
 using MaterialDesignThemes.Wpf;
 using System.Windows;
 
-namespace ImageFormatChanger
+namespace ImageConvertor
 {
     /// <summary>
     /// App.xaml の相互作用ロジック

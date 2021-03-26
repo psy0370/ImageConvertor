@@ -1,4 +1,4 @@
-﻿<Controls:MetroWindow x:Class="ImageFormatChanger.MainWindow"
+﻿<Controls:MetroWindow x:Class="ImageConvertor.MainWindow"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,7 +7,8 @@
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
                       mc:Ignorable="d"
-                      Title="MainWindow" Height="600" Width="800"
+                      Title="画像変換" Height="600" Width="800" AllowDrop="True"
+                      DragOver="MetroWindow_DragOver" Drop="MetroWindow_Drop" Loaded="MetroWindow_Loaded"
                       TextElement.Foreground="{DynamicResource MaterialDesignBody}"
                       TextElement.FontWeight="Regular"
                       TextElement.FontSize="13"
@@ -63,7 +64,8 @@
 
             <StackPanel Grid.Row="2" Margin="5" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button x:Name="ClearButton" Content="クリア" Width="75" Height="23"
-                        Style="{DynamicResource MahApps.Styles.Button.Dialogs}"/>
+                        Style="{DynamicResource MahApps.Styles.Button.Dialogs}"
+                        Click="ClearButton_Click"/>
                 <Button x:Name="ConvertButton" Content="変換開始" Width="75" Height="23" Margin="15,0,0,0"
                         Style="{DynamicResource MahApps.Styles.Button.Dialogs.Accent}"/>
             </StackPanel>
@@ -73,8 +75,15 @@
             </GroupBox>
         </Grid>
 
-        <ListView x:Name="SourceListView" DockPanel.Dock="Top">
-
+        <ListView x:Name="SourceListView" DockPanel.Dock="Top" SelectionMode="Single">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="ファイル名" DisplayMemberBinding="{Binding Filename}" Width="100"/>
+                    <GridViewColumn Header="場所" DisplayMemberBinding="{Binding Directory}" Width="300"/>
+                    <GridViewColumn Header="情報" DisplayMemberBinding="{Binding Information}" Width="150"/>
+                    <GridViewColumn Header="パレット" DisplayMemberBinding="{Binding HasPalette}" Width="100"/>
+                </GridView>
+            </ListView.View>
         </ListView>
     </DockPanel>
 </Controls:MetroWindow>

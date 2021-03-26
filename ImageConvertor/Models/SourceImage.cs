@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows.Media.Imaging;
 
-namespace ImageFormatChanger
+namespace ImageConvertor
 {
     /// <summary>
     /// 変換元画像の情報を表すクラス
@@ -30,49 +30,30 @@ namespace ImageFormatChanger
             }
         }
         /// <summary>
-        /// コーデックを取得します。
-        /// </summary>
-        public string BitsPerPixel
-        {
-            get
-            {
-                return bitmap is null ? null : $"{bitmap.Format.BitsPerPixel}bpp";
-            }
-        }
-        /// <summary>
-        /// 画像の幅を取得します。
-        /// </summary>
-        public int? Width
-        {
-            get
-            {
-                return bitmap?.PixelWidth;
-            }
-        }
-        /// <summary>
         /// 画像の高さを取得します。
         /// </summary>
-        public int? Height
-        {
-            get
-            {
-                return bitmap?.PixelHeight;
-            }
-        }
+        public string Information { get; private set; }
+        /// <summary>
+        /// パレットの有無を取得します。
+        /// </summary>
+        public bool HasPalette { get; private set; }
 
-        private string fullPath;
-        private BitmapImage bitmap;
+        private readonly string fullPath;
 
         public SourceImage(string path)
-        {            
+        {
             fullPath = path;
-            bitmap = new BitmapImage();
+
+            var bitmap = new BitmapImage();
             bitmap.BeginInit();
             bitmap.CacheOption = BitmapCacheOption.OnLoad;
             bitmap.CreateOptions = BitmapCreateOptions.None;
-            bitmap.UriSource = new Uri(path);
+            bitmap.UriSource = new Uri(fullPath);
             bitmap.EndInit();
             bitmap.Freeze();
+
+            Information = $"{bitmap.PixelWidth}x{bitmap.PixelHeight} / {bitmap.Format.BitsPerPixel}bpp";
+            HasPalette = !(bitmap.Palette is null);
         }
     }
 }
