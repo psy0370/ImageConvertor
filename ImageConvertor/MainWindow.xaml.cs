@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using MahApps.Metro.Controls;
 using System.Collections.ObjectModel;
 using System.IO;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace ImageConvertor
 {
@@ -72,6 +73,24 @@ namespace ImageConvertor
         }
 
         /// <summary>
+        /// 出力フォルダをクリックしたときの処理を定義します。
+        /// </summary>
+        private void OutputDirectory_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog
+            {
+                Title = "出力フォルダを選択してください",
+                Multiselect = false,
+                IsFolderPicker = true
+            };
+
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                OutputDirectory.Text = dialog.FileName;
+            }
+        }
+
+        /// <summary>
         /// クリアボタンをクリックしたときの処理を定義します。
         /// </summary>
         private void ClearButton_Click(object sender, RoutedEventArgs e)
@@ -95,6 +114,7 @@ namespace ImageConvertor
 
             foreach (var sourceImage in sourceImages)
             {
+                // 既にファイルが存在する場合の処理をどうするか後ほど決定
                 sourceImage.Save(encoder, directory);
             }
         }

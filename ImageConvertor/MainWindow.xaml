@@ -59,7 +59,8 @@
                     </StackPanel>
                     <TextBox x:Name="OutputDirectory" IsReadOnly="True" Margin="0,5,0,0"
                              materialDesign:HintAssist.Hint="出力先フォルダ"
-                             IsEnabled="{Binding ElementName=SamePath,Path=IsChecked,Converter={StaticResource InvartConvertor}}"/>
+                             IsEnabled="{Binding ElementName=SamePath,Path=IsChecked,Converter={StaticResource InvartConvertor}}"
+                             PreviewMouseDown="OutputDirectory_PreviewMouseDown"/>
                 </StackPanel>
             </GroupBox>
 
