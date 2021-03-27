@@ -2,14 +2,20 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.ComponentModel;
 
 namespace ImageConvertor
 {
     /// <summary>
     /// 変換元画像の情報を表すクラス
     /// </summary>
-    public class SourceImage
+    public class SourceImage : INotifyPropertyChanged
     {
+        /// <summary>
+        /// プロパティ変更通知のイベントハンドラ
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
         /// <summary>
         /// ファイルネームを取得します。
         /// </summary>
@@ -38,8 +44,32 @@ namespace ImageConvertor
         /// パレットの有無を取得します。
         /// </summary>
         public bool HasPalette { get; private set; }
+        /// <summary>
+        /// 処理済みかどうかを取得します。
+        /// </summary>
+        public bool IsProcessed
+        {
+            get
+            {
+                return isProcessed;
+            }
+            private set
+            {
+                if (value != isProcessed)
+                {
+                    isProcessed = value;
+                    OnPropertyChanged("IsProcessed");
+                }
+            }
+        }
 
         private readonly string fullPath;
+        private bool isProcessed;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public SourceImage(string path)
         {
@@ -54,33 +84,48 @@ namespace ImageConvertor
         /// </summary>
         /// <param name="encoder">エンコーダーを設定します。</param>
         /// <param name="path">保存するパスを設定します。</param>
-        public void Save(BitmapEncoder encoder, string directory, bool? trim, TrimType type, bool? line200, bool? color8)
+        public void Save(BitmapEncoder encoder, string directory, bool removeSource, bool trim, TrimType type, bool line200, bool color8)
         {
-            var extension = encoder.CodecInfo.FileExtensions.Split(',')[0];
-            var path = Path.Combine(directory ?? Directory, $"{Path.GetFileNameWithoutExtension(Filename)}{extension}");
-
-            var bitmap = LoadImage();
-            BitmapSource pBitmap;
-
-            if (trim == true || line200 == true || color8 == true)
+            if (!IsProcessed)
             {
-                pBitmap = ProcessImage(bitmap, trim == true, type, line200 == true, color8 == true);
-            }
-            else
-            {
-                pBitmap = (BitmapSource)bitmap;
-            }
+                var filename = $"{Path.GetFileNameWithoutExtension(Filename)}{encoder.CodecInfo.FileExtensions.Split(',')[0]}";
+                var path = Path.Combine(directory ?? Directory, filename);
 
-            var tempEncoder = (BitmapEncoder)Activator.CreateInstance(encoder.GetType());
-            tempEncoder.Frames.Add(BitmapFrame.Create(pBitmap));
+                var bitmap = LoadImage();
+                BitmapSource pBitmap;
 
-            using (var stream = File.OpenWrite(path))
-            {
-                tempEncoder.Save(stream);
-                stream.Close();
+                if (trim == true || line200 == true || color8 == true)
+                {
+                    pBitmap = ProcessImage(bitmap, trim == true, type, line200 == true, color8 == true);
+                }
+                else
+                {
+                    pBitmap = bitmap;
+                }
+
+                var tempEncoder = (BitmapEncoder)Activator.CreateInstance(encoder.GetType());
+                tempEncoder.Frames.Add(BitmapFrame.Create(pBitmap));
+
+                using (var stream = File.OpenWrite(path))
+                {
+                    tempEncoder.Save(stream);
+                    stream.Close();
+                }
+
+                // 元画像削除オンで出力したファイル名が異なる場合は削除
+                if (removeSource && Filename != filename)
+                {
+                    File.Delete(fullPath);
+                }
+
+                IsProcessed = true;
             }
         }
 
+        /// <summary>
+        /// ファイルから画像を読み取ります。
+        /// </summary>
+        /// <returns>読み取った画像を返します。</returns>
         private BitmapImage LoadImage()
         {
             var bitmap = new BitmapImage();
@@ -94,6 +139,15 @@ namespace ImageConvertor
             return bitmap;
         }
 
+        /// <summary>
+        /// 元画像を指定の方法で加工した新しい画像を取得します。
+        /// </summary>
+        /// <param name="bitmap">元画像を設定します。</param>
+        /// <param name="trim">トリミングするかどうかを設定します。</param>
+        /// <param name="type">トリミングの基準となる位置を設定します。</param>
+        /// <param name="line200">200ライン画像とみなすかを設定します。</param>
+        /// <param name="color8">8色画像とみなすかを設定します。</param>
+        /// <returns>加工した新しい画像を返します。</returns>
         private BitmapSource ProcessImage(BitmapImage bitmap, bool trim, TrimType type, bool line200, bool color8)
         {
             var wBmp = new WriteableBitmap(bitmap);
