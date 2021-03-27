@@ -43,7 +43,34 @@ namespace ImageConvertor
         public SourceImage(string path)
         {
             fullPath = path;
+            var bitmap = LoadImage();
+            Information = $"{bitmap.PixelWidth}x{bitmap.PixelHeight} / {bitmap.Format.BitsPerPixel}bpp";
+            HasPalette = !(bitmap.Palette is null);
+        }
 
+        /// <summary>
+        /// 指定されたエンコーダーで画像を保存します。
+        /// </summary>
+        /// <param name="encoder">エンコーダーを設定します。</param>
+        /// <param name="path">保存するパスを設定します。</param>
+        public void Save(BitmapEncoder encoder, string directory)
+        {
+            var extension = encoder.CodecInfo.FileExtensions.Split(',')[0];
+            var path = Path.Combine(directory ?? Directory, $"{Path.GetFileNameWithoutExtension(Filename)}{extension}");
+            
+            var bitmap = (BitmapSource)LoadImage();
+            var tempEncoder = (BitmapEncoder)Activator.CreateInstance(encoder.GetType());
+            tempEncoder.Frames.Add(BitmapFrame.Create(bitmap));
+
+            using (var stream = File.OpenWrite(path))
+            {
+                tempEncoder.Save(stream);
+                stream.Close();
+            }
+        }
+
+        private BitmapImage LoadImage()
+        {
             var bitmap = new BitmapImage();
             bitmap.BeginInit();
             bitmap.CacheOption = BitmapCacheOption.OnLoad;
@@ -52,8 +79,7 @@ namespace ImageConvertor
             bitmap.EndInit();
             bitmap.Freeze();
 
-            Information = $"{bitmap.PixelWidth}x{bitmap.PixelHeight} / {bitmap.Format.BitsPerPixel}bpp";
-            HasPalette = !(bitmap.Palette is null);
+            return bitmap;
         }
     }
 }

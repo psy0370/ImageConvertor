@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
 namespace ImageConvertor
 {
-    public class CodecCollection : Dictionary<string, Type>
+    public class CodecCollection : List<BitmapEncoder>
     {
         public CodecCollection()
         {
-            Add("BMP", typeof(BmpBitmapEncoder));
-            Add("PNG", typeof(PngBitmapEncoder));
-            Add("GIF", typeof(GifBitmapEncoder));
-            Add("JPG", typeof(JpegBitmapEncoder));
+            Add(new BmpBitmapEncoder());
+            Add(new PngBitmapEncoder());
+            Add(new GifBitmapEncoder());
+            Add(new JpegBitmapEncoder());
         }
     }
 }

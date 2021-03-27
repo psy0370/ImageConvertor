@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MahApps.Metro.Controls;
 using System.Collections.ObjectModel;
+using System.IO;
 
 namespace ImageConvertor
 {
@@ -76,6 +77,26 @@ namespace ImageConvertor
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             sourceImages.Clear();
+        }
+
+        /// <summary>
+        /// 変換開始ボタンをクリックしたときの処理を定義します。
+        /// </summary>
+        private void ConvertButton_Click(object sender, RoutedEventArgs e)
+        {
+            var directory = SamePath.IsChecked == true ? null : OutputDirectory.Text;
+            if (directory != null && !Directory.Exists(directory))
+            {
+                // UI上でエラーを表現する処理を後ほど追加する
+                return;
+            }
+
+            var encoder = (BitmapEncoder)CodecList.SelectedItem;
+
+            foreach (var sourceImage in sourceImages)
+            {
+                sourceImage.Save(encoder, directory);
+            }
         }
     }
 }

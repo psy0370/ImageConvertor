@@ -34,8 +34,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    
-                    <ComboBox x:Name="CodecList" DisplayMemberPath="Key"/>
+
+                    <ComboBox x:Name="CodecList" DisplayMemberPath="CodecInfo.FriendlyName"/>
                     <DockPanel Grid.Row="1" Margin="0,5,0,0"
                                KeyboardNavigation.TabNavigation="Local">
                         <CheckBox x:Name="IsTrimming" DockPanel.Dock="Left" Content="トリミング" TabIndex="1" VerticalAlignment="Top"/>
@@ -57,7 +57,8 @@
                         <CheckBox x:Name="RemoveSource" Content="元画像を削除する" Margin="15,0,0,0"
                                   IsEnabled="{Binding ElementName=SamePath,Path=IsChecked}"/>
                     </StackPanel>
-                    <TextBox x:Name="OutputPath" IsReadOnly="True" Margin="0,5,0,0"
+                    <TextBox x:Name="OutputDirectory" IsReadOnly="True" Margin="0,5,0,0"
+                             materialDesign:HintAssist.Hint="出力先フォルダ"
                              IsEnabled="{Binding ElementName=SamePath,Path=IsChecked,Converter={StaticResource InvartConvertor}}"/>
                 </StackPanel>
             </GroupBox>
@@ -67,7 +68,8 @@
                         Style="{DynamicResource MahApps.Styles.Button.Dialogs}"
                         Click="ClearButton_Click"/>
                 <Button x:Name="ConvertButton" Content="変換開始" Width="75" Height="23" Margin="15,0,0,0"
-                        Style="{DynamicResource MahApps.Styles.Button.Dialogs.Accent}"/>
+                        Style="{DynamicResource MahApps.Styles.Button.Dialogs.Accent}"
+                        Click="ConvertButton_Click"/>
             </StackPanel>
 
             <GroupBox Grid.Column="1" Grid.RowSpan="3" Header="変換ログ">
