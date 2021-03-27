@@ -23,6 +23,7 @@ namespace ImageConvertor
     public partial class MainWindow : MetroWindow
     {
         private readonly ObservableCollection<SourceImage> sourceImages = new ObservableCollection<SourceImage>();
+        private readonly CodecCollection codecs = new CodecCollection();
 
         public MainWindow()
         {
@@ -35,6 +36,8 @@ namespace ImageConvertor
         private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
             SourceListView.ItemsSource = sourceImages;
+            CodecList.ItemsSource = codecs;
+            CodecList.SelectedIndex = 0;
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ImageFormatChanger
+namespace ImageConvertor
 {
     public class InvartConvertor : IValueConverter
     {
