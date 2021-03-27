@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace ImageConvertor
@@ -41,6 +42,10 @@ namespace ImageConvertor
         /// </summary>
         public string Information { get; private set; }
         /// <summary>
+        /// 色深度を取得します。
+        /// </summary>
+        public int BitsPerPixel { get; private set; }
+        /// <summary>
         /// パレットの有無を取得します。
         /// </summary>
         public bool HasPalette { get; private set; }
@@ -76,6 +81,7 @@ namespace ImageConvertor
             fullPath = path;
             var bitmap = LoadImage();
             Information = $"{bitmap.PixelWidth}x{bitmap.PixelHeight} / {bitmap.Format.BitsPerPixel}bpp";
+            BitsPerPixel = bitmap.Format.BitsPerPixel;
             HasPalette = !(bitmap.Palette is null);
         }
 
@@ -97,15 +103,12 @@ namespace ImageConvertor
                 var path = Path.Combine(directory ?? Directory, filename);
 
                 var bitmap = LoadImage();
-                BitmapSource pBitmap;
 
-                if (trimming == true || line200 == true || color8 == true)
+                var pBitmap = (HasPalette && BitsPerPixel == 8 && CountUsedColor(bitmap) <= 16) ? ShrinkBitsPerPixel(bitmap) : bitmap;
+
+                if (trimming || line200 || color8)
                 {
-                    pBitmap = ProcessImage(bitmap, trimming == true, trimmingType, line200 == true, color8 == true);
-                }
-                else
-                {
-                    pBitmap = bitmap;
+                    pBitmap = ProcessImage(pBitmap, trimming, trimmingType, line200, color8);
                 }
 
                 var encoder = (BitmapEncoder)Activator.CreateInstance(codec.EncoderType);
@@ -145,6 +148,125 @@ namespace ImageConvertor
         }
 
         /// <summary>
+        /// パレット保持画像の色数をカウントします。
+        /// </summary>
+        /// <param name="bitmap">色数をカウントする画像を設定します。</param>
+        /// <returns>色数を返します。</returns>
+        private int CountUsedColor(BitmapImage bitmap)
+        {
+            var palettes = new bool[256];
+            for (var i = 0; i < 256; i++)
+            {
+                palettes[i] = false;
+            }
+
+            var wBmp = new WriteableBitmap(bitmap);
+            wBmp.Lock();
+
+            unsafe
+            {
+                var width = bitmap.PixelWidth;
+                var height = bitmap.PixelHeight;
+                var ptr = (byte*)wBmp.BackBuffer;
+                var stride = (width * BitsPerPixel + 7) / 8;
+
+                if (BitsPerPixel == 4)
+                {
+                    for (var y = 0; y < height; y++)
+                    {
+                        for (var x = 0; x < width; x++)
+                        {
+                            byte* pixel = ptr + y * stride + x / 2;
+                            if (x % 2 == 0)
+                            {
+                                palettes[(uint)*pixel >> 4] = true;
+                            }
+                            else
+                            {
+                                palettes[*pixel & 0x0f] = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (var y = 0; y < height; y++)
+                    {
+                        for (var x = 0; x < width; x++)
+                        {
+                            byte* pixel = ptr + y * stride + x;
+                            palettes[*pixel] = true;
+                        }
+                    }
+                }
+            }
+
+            wBmp.Unlock();
+
+            var count = 0;
+            foreach (var palette in palettes)
+            {
+                if (palette) count++;
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// パレット保持画像を8bppから4bppへ縮小します。
+        /// </summary>
+        /// <param name="bitmap">8bppの画像を設定します。</param>
+        /// <returns>縮小した画像を返します。</returns>
+        private BitmapSource ShrinkBitsPerPixel(BitmapImage bitmap)
+        {
+            // パレット取得
+            var colors = new Color[16];
+            for (var i = 0; i < 16; i++)
+            {
+                colors[i] = bitmap.Palette.Colors[i];
+            }
+            var palette = new BitmapPalette(colors);
+
+            // 画像準備
+            var sBmp = new WriteableBitmap(bitmap);
+            sBmp.Lock();
+            var dBmp = new WriteableBitmap(bitmap.PixelWidth, bitmap.PixelHeight, 72, 72, PixelFormats.Indexed4, palette);
+            dBmp.Lock();
+
+            unsafe
+            {
+                var width = bitmap.PixelWidth;
+                var height = bitmap.PixelHeight;
+                var sPtr = (byte*)sBmp.BackBuffer;
+                var dPtr = (byte*)dBmp.BackBuffer;
+                var sStride = (width * BitsPerPixel + 7) / 8;
+                var dStride = (width * 4 + 7) / 8;
+
+                for (var y = 0; y < height; y++)
+                {
+                    for (var x = 0; x < width; x++)
+                    {
+                        byte* sPixel = sPtr + y * sStride + x;
+                        byte* dPixel = dPtr + y * dStride + x / 2;
+
+                        if (x % 2 == 0)
+                        {
+                            *dPixel = (byte)((uint)*sPixel << 4);
+                        }
+                        else
+                        {
+                            *dPixel |= *sPixel;
+                        }
+                    }
+                }
+            }
+
+            sBmp.Unlock();
+            dBmp.Unlock();
+            return dBmp;
+        }
+
+        /// <summary>
         /// 元画像を指定の方法で加工した新しい画像を取得します。
         /// </summary>
         /// <param name="bitmap">元画像を設定します。</param>
@@ -153,21 +275,21 @@ namespace ImageConvertor
         /// <param name="line200">200ライン画像とみなすかを設定します。</param>
         /// <param name="color8">8色画像とみなすかを設定します。</param>
         /// <returns>加工した新しい画像を返します。</returns>
-        private BitmapSource ProcessImage(BitmapImage bitmap, bool trimming, TrimType trimmingType, bool line200, bool color8)
+        private BitmapSource ProcessImage(BitmapSource bitmap, bool trimming, TrimType trimmingType, bool line200, bool color8)
         {
-            var wBmp = new WriteableBitmap(bitmap);
-            wBmp.Lock();
-
-            if (trimming && bitmap.Format.BitsPerPixel == 4 && HasPalette)
+            if (trimming && HasPalette)
             {
-                // 4bitインデックスカラーかつトリミングがオンの場合に処理
+                // トリミングオンでパレット保持の場合に処理
+                var wBmp = new WriteableBitmap(bitmap);
+                wBmp.Lock();
+
                 unsafe
                 {
                     int sx, sy, ex, ey, oColorIndex;
-                    var ptr = (byte*)wBmp.BackBuffer;
                     var width = bitmap.PixelWidth;
                     var height = bitmap.PixelHeight;
-                    var stride = (bitmap.PixelWidth * bitmap.Format.BitsPerPixel + 7) / 8;
+                    var ptr = (byte*)wBmp.BackBuffer;
+                    var stride = (width * BitsPerPixel + 7) / 8;
 
                     // 左上 or 右下 のパレットを取得
                     byte* oPtr = ptr + (trimmingType == TrimType.LeftTop ? 0 : (bitmap.PixelHeight - 1) * stride + (width - 1) / 2);
@@ -259,6 +381,8 @@ namespace ImageConvertor
                         return new CroppedBitmap(bitmap, new Int32Rect(sx, sy, ex - sx + 1, ey - sy + 1)) as BitmapSource;
                     }
                 }
+
+                wBmp.Unlock();
             }
 
             return bitmap;
