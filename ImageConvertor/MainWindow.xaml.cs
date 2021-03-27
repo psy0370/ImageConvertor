@@ -115,7 +115,7 @@ namespace ImageConvertor
             foreach (var sourceImage in sourceImages)
             {
                 // 既にファイルが存在する場合の処理をどうするか後ほど決定
-                sourceImage.Save(encoder, directory);
+                sourceImage.Save(encoder, directory, IsTrimming.IsChecked, LeftTop.IsChecked == true ? TrimType.LeftTop : TrimType.RightBottom, Is200Line.IsChecked, Is8Color.IsChecked);
             }
         }
     }

@@ -43,8 +43,8 @@
                         <CheckBox x:Name="Is200Line" DockPanel.Dock="Right" Content="200ライン" TabIndex="4" VerticalAlignment="Top"/>
                         <StackPanel Margin="15,0,0,0"
                             IsEnabled="{Binding ElementName=IsTrimming, Path=IsChecked}">
-                            <RadioButton x:Name="RefLeftUp" Content="左上カラー基準" TabIndex="2" IsChecked="True"/>
-                            <RadioButton x:Name="RefRightDown" Content="右下カラー基準" TabIndex="3"/>
+                            <RadioButton x:Name="LeftTop" Content="左上カラー基準" TabIndex="2" IsChecked="True"/>
+                            <RadioButton x:Name="RightBottom" Content="右下カラー基準" TabIndex="3"/>
                         </StackPanel>
                     </DockPanel>
                 </Grid>
