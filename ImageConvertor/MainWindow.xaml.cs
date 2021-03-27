@@ -1,21 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using MahApps.Metro.Controls;
+﻿using MahApps.Metro.Controls;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 
 namespace ImageConvertor
 {
@@ -110,17 +100,27 @@ namespace ImageConvertor
                 return;
             }
 
-            var encoder = (BitmapEncoder)CodecList.SelectedItem;
+            var codec = (CodecInfo)CodecList.SelectedItem;
+            var removeSource = SamePath.IsChecked == true && RemoveSource.IsChecked == true;
+            var trimming = IsTrimming.IsChecked == true;
+            var trimmingType = LeftTop.IsChecked == true ? TrimType.LeftTop : TrimType.RightBottom;
+            var line200 = false;// Is200Line.IsChecked == true;
+            var color8 = false;// Is8Color.IsChecked == true;
 
-            foreach (var sourceImage in sourceImages)
+            Task.Factory.StartNew(() =>
             {
-                // 既にファイルが存在する場合の処理をどうするか後ほど決定
-                sourceImage.Save(encoder, directory, 
-                    SamePath.IsChecked == true && RemoveSource.IsChecked == true, 
-                    IsTrimming.IsChecked == true, 
-                    LeftTop.IsChecked == true ? TrimType.LeftTop : TrimType.RightBottom,
-                    false, false);// Is200Line.IsChecked, Is8Color.IsChecked);
-            }
+                foreach (var sourceImage in sourceImages)
+                {
+                    // 既にファイルが存在する場合の処理をどうするか後ほど決定
+                    sourceImage.Save(codec, directory, removeSource, trimming, trimmingType, line200, color8);
+
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        LogView.Items.Add($"{sourceImage.Filename} => {codec.Name}");
+                        LogView.ScrollIntoView(LogView.Items[LogView.Items.Count - 1]);
+                    }));
+                }
+            });
         }
     }
 }

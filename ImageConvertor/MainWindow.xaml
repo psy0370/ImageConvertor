@@ -35,7 +35,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <ComboBox x:Name="CodecList" DisplayMemberPath="CodecInfo.FriendlyName"/>
+                    <ComboBox x:Name="CodecList" DisplayMemberPath="Name"/>
                     <DockPanel Grid.Row="1" Margin="0,5,0,0"
                                KeyboardNavigation.TabNavigation="Local">
                         <CheckBox x:Name="IsTrimming" DockPanel.Dock="Left" Content="トリミング" TabIndex="1" VerticalAlignment="Top"/>
@@ -73,8 +73,8 @@
                         Click="ConvertButton_Click"/>
             </StackPanel>
 
-            <GroupBox Grid.Column="1" Grid.RowSpan="3" Header="変換ログ">
-                <ListBox x:Name="LogView"/>
+            <GroupBox Grid.Column="1" Grid.RowSpan="3" Header="変換ログ" Height="263">
+                <ListBox x:Name="LogView" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
             </GroupBox>
         </Grid>
 

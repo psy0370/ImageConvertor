@@ -1,8 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using System.ComponentModel;
 
 namespace ImageConvertor
 {
@@ -82,33 +82,38 @@ namespace ImageConvertor
         /// <summary>
         /// 指定されたエンコーダーで画像を保存します。
         /// </summary>
-        /// <param name="encoder">エンコーダーを設定します。</param>
-        /// <param name="path">保存するパスを設定します。</param>
-        public void Save(BitmapEncoder encoder, string directory, bool removeSource, bool trim, TrimType type, bool line200, bool color8)
+        /// <param name="codec">エンコードするためのコーデック情報を設定します。</param>
+        /// <param name="directory">保存するパスを設定します。</param>
+        /// <param name="removeSource">元画像を削除するかどうかを設定します。</param>
+        /// <param name="trimming">トリミングするかどうかを設定します。</param>
+        /// <param name="trimmingType">トリミングの基準となる位置を設定します。</param>
+        /// <param name="line200">200ライン画像とみなすかを設定します。</param>
+        /// <param name="color8">8色画像とみなすかを設定します。</param>
+        public void Save(CodecInfo codec, string directory, bool removeSource, bool trimming, TrimType trimmingType, bool line200, bool color8)
         {
             if (!IsProcessed)
             {
-                var filename = $"{Path.GetFileNameWithoutExtension(Filename)}{encoder.CodecInfo.FileExtensions.Split(',')[0]}";
+                var filename = $"{Path.GetFileNameWithoutExtension(Filename)}{codec.Extension}";
                 var path = Path.Combine(directory ?? Directory, filename);
 
                 var bitmap = LoadImage();
                 BitmapSource pBitmap;
 
-                if (trim == true || line200 == true || color8 == true)
+                if (trimming == true || line200 == true || color8 == true)
                 {
-                    pBitmap = ProcessImage(bitmap, trim == true, type, line200 == true, color8 == true);
+                    pBitmap = ProcessImage(bitmap, trimming == true, trimmingType, line200 == true, color8 == true);
                 }
                 else
                 {
                     pBitmap = bitmap;
                 }
 
-                var tempEncoder = (BitmapEncoder)Activator.CreateInstance(encoder.GetType());
-                tempEncoder.Frames.Add(BitmapFrame.Create(pBitmap));
+                var encoder = (BitmapEncoder)Activator.CreateInstance(codec.EncoderType);
+                encoder.Frames.Add(BitmapFrame.Create(pBitmap));
 
                 using (var stream = File.OpenWrite(path))
                 {
-                    tempEncoder.Save(stream);
+                    encoder.Save(stream);
                     stream.Close();
                 }
 
@@ -143,17 +148,17 @@ namespace ImageConvertor
         /// 元画像を指定の方法で加工した新しい画像を取得します。
         /// </summary>
         /// <param name="bitmap">元画像を設定します。</param>
-        /// <param name="trim">トリミングするかどうかを設定します。</param>
-        /// <param name="type">トリミングの基準となる位置を設定します。</param>
+        /// <param name="trimming">トリミングするかどうかを設定します。</param>
+        /// <param name="trimmingType">トリミングの基準となる位置を設定します。</param>
         /// <param name="line200">200ライン画像とみなすかを設定します。</param>
         /// <param name="color8">8色画像とみなすかを設定します。</param>
         /// <returns>加工した新しい画像を返します。</returns>
-        private BitmapSource ProcessImage(BitmapImage bitmap, bool trim, TrimType type, bool line200, bool color8)
+        private BitmapSource ProcessImage(BitmapImage bitmap, bool trimming, TrimType trimmingType, bool line200, bool color8)
         {
             var wBmp = new WriteableBitmap(bitmap);
             wBmp.Lock();
 
-            if (trim && bitmap.Format.BitsPerPixel == 4 && HasPalette)
+            if (trimming && bitmap.Format.BitsPerPixel == 4 && HasPalette)
             {
                 // 4bitインデックスカラーかつトリミングがオンの場合に処理
                 unsafe
@@ -165,7 +170,7 @@ namespace ImageConvertor
                     var stride = (bitmap.PixelWidth * bitmap.Format.BitsPerPixel + 7) / 8;
 
                     // 左上 or 右下 のパレットを取得
-                    byte* oPtr = ptr + (type == TrimType.LeftTop ? 0 : (bitmap.PixelHeight - 1) * stride + (width - 1) / 2);
+                    byte* oPtr = ptr + (trimmingType == TrimType.LeftTop ? 0 : (bitmap.PixelHeight - 1) * stride + (width - 1) / 2);
 
                     // トリミングするカラーインデックスを取得
                     if ((width - 1) % 2 == 0)
