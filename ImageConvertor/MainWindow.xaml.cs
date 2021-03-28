@@ -57,10 +57,17 @@ namespace ImageConvertor
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var entries = (string[])e.Data.GetData(DataFormats.FileDrop);
-                foreach (var source in FileManager.GetImageFiles(entries))
+
+                Task.Factory.StartNew(() =>
                 {
-                    sourceImages.Add(source);
-                }
+                    foreach (var source in FileManager.GetImageFiles(entries))
+                    {
+                        Dispatcher.Invoke(new Action(() =>
+                        {
+                            sourceImages.Add(source);
+                        }));
+                    }
+                });
             }
         }
 
