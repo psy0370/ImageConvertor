@@ -1,0 +1,19 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- 警告アニメーション定義 -->
+    <Storyboard x:Key="TextBoxAlert">
+        <ColorAnimationUsingKeyFrames
+            Storyboard.TargetName="OutputDirectory"
+            Storyboard.TargetProperty="Background.Color"
+            Duration="0:0:0.5"
+            FillBehavior="HoldEnd">
+            <ColorAnimationUsingKeyFrames.KeyFrames>
+                <LinearColorKeyFrame Value="#00ff0000" KeyTime="0:0:0" />
+                <LinearColorKeyFrame Value="Red" KeyTime="0:0:0.05" />
+                <LinearColorKeyFrame Value="Red" KeyTime="0:0:0.075" />
+                <LinearColorKeyFrame Value="#00ff0000" KeyTime="0:0:0.5" />
+                <LinearColorKeyFrame Value="Transparent" KeyTime="0:0:0.5" />
+            </ColorAnimationUsingKeyFrames.KeyFrames>            
+        </ColorAnimationUsingKeyFrames>            
+    </Storyboard>
+</ResourceDictionary>

@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 
 namespace ImageConvertor
 {
@@ -16,10 +17,11 @@ namespace ImageConvertor
     {
         private readonly ObservableCollection<SourceImage> sourceImages = new ObservableCollection<SourceImage>();
         private readonly CodecCollection codecs = new CodecCollection();
-
+        private readonly Storyboard storyboard;
         public MainWindow()
         {
             InitializeComponent();
+            storyboard = FindResource("TextBoxAlert") as Storyboard;
         }
 
         /// <summary>
@@ -96,7 +98,7 @@ namespace ImageConvertor
             var directory = SamePath.IsChecked == true ? null : OutputDirectory.Text;
             if (directory != null && !Directory.Exists(directory))
             {
-                // UI上でエラーを表現する処理を後ほど追加する
+                BeginStoryboard(storyboard);
                 return;
             }
 
