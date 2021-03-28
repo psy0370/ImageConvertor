@@ -95,7 +95,7 @@ namespace ImageConvertor
         /// <param name="trimmingType">トリミングの基準となる位置を設定します。</param>
         /// <param name="line200">200ライン画像とみなすかを設定します。</param>
         /// <param name="color8">8色画像とみなすかを設定します。</param>
-        public void Save(CodecInfo codec, string directory, bool removeSource, bool trimming, TrimType trimmingType, bool line200, bool color8)
+        public SaveResult Save(CodecInfo codec, string directory, bool removeSource, bool trimming, TrimType trimmingType, bool line200, bool color8)
         {
             if (!IsProcessed)
             {
@@ -127,7 +127,10 @@ namespace ImageConvertor
                 }
 
                 IsProcessed = true;
+                return SaveResult.Processed;
             }
+
+            return SaveResult.Skipped;
         }
 
         /// <summary>

@@ -112,11 +112,25 @@ namespace ImageConvertor
                 foreach (var sourceImage in sourceImages)
                 {
                     // 既にファイルが存在する場合の処理をどうするか後ほど決定
-                    sourceImage.Save(codec, directory, removeSource, trimming, trimmingType, line200, color8);
+                    var result = sourceImage.Save(codec, directory, removeSource, trimming, trimmingType, line200, color8);
+                    var log = $"{sourceImage.Filename} => ";
+
+                    switch (result)
+                    {
+                        case SaveResult.Processed:
+                            log += $"{codec.Name}";
+                            break;
+                        case SaveResult.Skipped:
+                            log += "skipped.";
+                            break;
+                        default:
+                            log += "undefined.";
+                            break;
+                    }
 
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        LogView.Items.Add($"{sourceImage.Filename} => {codec.Name}");
+                        LogView.Items.Add(log);
                         LogView.ScrollIntoView(LogView.Items[LogView.Items.Count - 1]);
                     }));
                 }
