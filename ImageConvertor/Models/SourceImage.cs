@@ -161,10 +161,10 @@ namespace ImageConvertor
                 if (trimming)
                 {
                     // トリミング
-                    wBmp.Lock();
-
                     unsafe
                     {
+                        wBmp.Lock();
+
                         int sx, sy, ex, ey, oColorIndex;
                         var width = bitmap.PixelWidth;
                         var height = bitmap.PixelHeight;
@@ -255,13 +255,13 @@ namespace ImageConvertor
                             if (check) break;
                         }
 
+                        wBmp.Unlock();
+
                         if (sx <= ex || sy <= ey)
                         {
-                            return new CroppedBitmap(bitmap, new Int32Rect(sx, sy, ex - sx + 1, ey - sy + 1)) as BitmapSource;
+                            return new CroppedBitmap(wBmp, new Int32Rect(sx, sy, ex - sx + 1, ey - sy + 1)) as BitmapSource;
                         }
                     }
-
-                    wBmp.Unlock();
                 }
 
                 return wBmp;
