@@ -88,11 +88,27 @@
         <ListView x:Name="SourceListView" DockPanel.Dock="Top" SelectionMode="Single">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="ファイル名" DisplayMemberBinding="{Binding Filename}" Width="100"/>
-                    <GridViewColumn Header="場所" DisplayMemberBinding="{Binding Directory}" Width="300"/>
+                    <GridViewColumn Header="ファイル名" DisplayMemberBinding="{Binding Filename}" Width="150"/>
                     <GridViewColumn Header="情報" DisplayMemberBinding="{Binding Information}" Width="150"/>
-                    <GridViewColumn Header="パレット" DisplayMemberBinding="{Binding HasPalette}" Width="100"/>
-                    <GridViewColumn Header="処理状況" DisplayMemberBinding="{Binding IsProcessed}" Width="100"/>
+                    <GridViewColumn Header="パレット" Width="120">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox IsChecked="{Binding HasPalette,Mode=OneWay}" IsHitTestVisible="False" IsTabStop="False"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="処理済" Width="120">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox IsChecked="{Binding IsProcessed,Mode=OneWay}" IsHitTestVisible="False" IsTabStop="False"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="場所" DisplayMemberBinding="{Binding Directory}" Width="500"/>
                 </GridView>
             </ListView.View>
         </ListView>
