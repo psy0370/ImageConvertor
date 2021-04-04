@@ -113,7 +113,7 @@ namespace ImageConvertor
             var removeSource = SamePath.IsChecked == true && RemoveSource.IsChecked == true;
             var trimming = IsTrimming.IsChecked == true;
             var trimmingType = LeftTop.IsChecked == true ? TrimType.LeftTop : TrimType.RightBottom;
-            var line200 = false;// Is200Line.IsChecked == true;
+            var line200 = Is200Line.IsChecked == true;
             var color8 = false;// Is8Color.IsChecked == true;
 
             Task.Factory.StartNew(() =>

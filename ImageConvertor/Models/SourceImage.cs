@@ -158,6 +158,30 @@ namespace ImageConvertor
             {
                 var wBmp = ShrinkBitsPerPixel(bitmap);
 
+                if (line200 && wBmp.PixelHeight >= 2)
+                {
+                    // 200ライン
+                    unsafe
+                    {
+                        wBmp.Lock();
+
+                        var ptr = (byte*)wBmp.BackBuffer;
+
+                        for (var y = 1; y < wBmp.PixelHeight; y += 2)
+                        {
+                            byte* sBuffer = ptr + (y - 1) * wBmp.BackBufferStride;
+                            byte* dBuffer = ptr + y * wBmp.BackBufferStride;
+
+                            for (var offset = 0; offset < wBmp.BackBufferStride; offset++)
+                            {
+                                dBuffer[offset] = sBuffer[offset];
+                            }
+                        }
+
+                        wBmp.Unlock();
+                    }
+                }
+
                 if (trimming)
                 {
                     // トリミング
